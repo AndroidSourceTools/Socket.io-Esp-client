@@ -28,15 +28,15 @@
 */
 #include <SocketIOClientSecure.h>
 
-bool SocketIOClientSecure::connect(IPAddress ip, uint16_t port) {
-	if (!client.connect(thehostname, port)) return false;
-	hostname = thehostname;
+bool SocketIOClientSecure::connect(IPAddress ip, uint16_t theport) {
+	if (!client.connect(ip, port)) return false;
+	serverIp = ip;
 	port = theport;
 	sendHandshake(ip);
 	return readHandshake();
 }
 
-bool SocketIOClientSecure::connect(char thehostname[], int theport) {
+bool SocketIOClientSecure::connect(char thehostname[], uint16_t theport) {
 	if (!client.connect(thehostname, theport)) return false;
 	hostname = thehostname;
 	port = theport;
@@ -130,18 +130,19 @@ void SocketIOClientSecure::setDataArrivedDelegate(DataArrivedDelegate newdataArr
 	  dataArrivedDelegate = newdataArrivedDelegate;
 }
 
-//Send the apopraite headerfiles to try establish a commumication
+//Send the apopraite headerfiles to try establish a commumication using ip
 void SocketIOClientSecure::sendHandshake(IPAddress ip, const char* path, const char* querry ) {
-	client.println(F("GET  HTTP/1.1"));
+	client.println(F("GET HTTP/1.1"));
 	client.print(F("Host: "));
-	client.println(F("User-Agent: Arduino/1.0"));
+	//client.println(hostname);
+	client.println(F("User-Agent: Arduino/1.0\r\n"));
 }
-
-void SocketIOClientSecure::sendHandshake(char hostname[]) {
-	client.println(F("GET /socket.io/1/ HTTP/1.1"));
+//Send the apopraite headerfiles to try establish a commumication using dns
+void SocketIOClientSecure::sendHandshake(const char* hostname) {
+	client.println(F("GET HTTP/1.1"));
 	client.print(F("Host: "));
 	client.println(hostname);
-	client.println(F("Origin: Arduino\r\n"));
+	client.println(F("User-Agent: Arduino/1.0\r\n"));
 }
 
 bool SocketIOClientSecure::waitForInput(void) {
@@ -186,20 +187,39 @@ bool SocketIOClientSecure::readHandshake() {
 
 	// reconnect on websocket connection
 	Serial.print(F("WS Connect..."));
-	if (!client.connect(hostname, port)) {
-		Serial.print(F("Reconnect failed."));
-		return false;
-	}
-	Serial.println(F("Reconnected."));
+	// if there is a hostname else use the ip address
+	if(hostname){
+		if (!client.connect(hostname, port)) {
+			Serial.print(F("Reconnect failed."));
+			return false;
+		}
+		Serial.println(F("Reconnected."));
 
-	client.print(F("GET /socket.io/1/websocket/"));
-	client.print(sid);
-	client.println(F(" HTTP/1.1"));
-	client.print(F("Host: "));
-	client.println(hostname);
-	client.println(F("Origin: ArduinoSocketIOClientSecure"));
-	client.println(F("Upgrade: WebSocket"));	// must be camelcase ?!
-	client.println(F("Connection: Upgrade\r\n"));
+		client.print(F("GET /socket.io/1/websocket/"));
+		client.print(sid);
+		client.println(F(" HTTP/1.1"));
+		client.print(F("Host: "));
+		client.println(hostname);
+		client.println(F("Origin: ArduinoSocketIOClientSecure"));
+		client.println(F("Upgrade: WebSocket"));	// must be camelcase ?!
+		client.println(F("Connection: Upgrade\r\n"));
+	}else{
+		if (!client.connect(serverIp, port)) {
+			Serial.print(F("Reconnect failed."));
+			return false;
+		}
+		Serial.println(F("Reconnected."));
+
+		client.print(F("GET /socket.io/1/websocket/"));
+		client.print(sid);
+		client.println(F(" HTTP/1.1"));
+		client.print(F("Host: "));
+		//client.println(hostname);
+		client.println(F("Origin: ArduinoSocketIOClientSecure"));
+		client.println(F("Upgrade: WebSocket"));	// must be camelcase ?!
+		client.println(F("Connection: Upgrade\r\n"));
+	}
+	
 
 	if (!waitForInput()) return false;
 

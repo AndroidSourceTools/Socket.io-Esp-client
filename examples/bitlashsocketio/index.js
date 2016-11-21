@@ -6,6 +6,7 @@
 //	Copyright 2013 Bill Roy (MIT License; see LICENSE file)
 //
 //
+var fs = require('fs');
 var opt = require('optimist');
 var url = require('url');
 var argv = opt.usage('Usage: $0 [flags]')
@@ -27,26 +28,32 @@ var log_file = "datalog.txt";
 
 console.log('WebSocket Commander here!', argv);
 
+//Load https certificates
+var privateKey  = fs.readFileSync('keys/key.pem', 'utf8');
+var certificate = fs.readFileSync('keys/cert.pem', 'utf8');
+var credentials = {
+	key: privateKey, 
+	cert: certificate,
+	passphrase:'socketio'
+};
+
 //////////
 //
 //	Configure HTTP server
 //
 var express = require('express');
 var app = express();
-var http = require('http');
-var server = http.createServer(app);
-var io = require('socket.io').listen(server);
-io.set('transports', ['websocket']);    
+var https = require('https');
+var server = https.Server(credentials,app);
+var io = require('socket.io')(server);
 io.set('log level', argv.debug ? 3 : 1);
 
-app.configure(function () {
-	app.use(express.logger());
-	app.use(express.bodyParser());
-	app.use(express.static(__dirname + '/public'));
-});
 
+//app.use(express.logger());
+//app.use(express.bodyParser());
+app.use(express.static(__dirname + '/public'));
 app.get('/', function(req, res) {
-	res.sendfile('index.html');
+	res.sendFile(__dirname + '/index.html');
 });
 
 server.listen(port);
@@ -59,7 +66,6 @@ console.log('Listening on port:', port);
 //
 var output_socket;
 var fs = require('fs');
-
 var tty = io
 	.of('/tty')
 	.on('connection', function(socket) {
@@ -77,7 +83,7 @@ setInterval(function() {
 	tty.emit('message', new Date().toString() + '\n');
 }, 30000);
 
-
+//Any other socket connection (The ardunio)
 io.sockets.on('connection', function (socket) {
 	console.log('Client connected via', socket.transport);
 	socket.on('message', function(data) {

@@ -53,6 +53,7 @@ class SocketIOClientSecure {
 	private:
 		WiFiClientSecure client;
 		DataArrivedDelegate dataArrivedDelegate;
+		IPAddress serverIp;
 		char *dataptr;
 		char databuffer[DATA_BUFFER_LEN];
 		char sid[SID_LEN];

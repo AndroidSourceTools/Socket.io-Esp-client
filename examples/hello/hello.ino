@@ -21,7 +21,7 @@
 #include "SocketIOClient.h"
 #include "Ethernet.h"
 #include "SPI.h"
-#include "bitlash.h"
+
 SocketIOClient client;
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
