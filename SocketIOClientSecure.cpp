@@ -26,9 +26,17 @@
 	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
 */
-#include <SocketIOClient.h>
+#include <SocketIOClientSecure.h>
 
-bool SocketIOClient::connect(char thehostname[], int theport) {
+bool SocketIOClientSecure::connect(IPAddress ip, uint16_t port) {
+	if (!client.connect(thehostname, port)) return false;
+	hostname = thehostname;
+	port = theport;
+	sendHandshake(ip);
+	return readHandshake();
+}
+
+bool SocketIOClientSecure::connect(char thehostname[], int theport) {
 	if (!client.connect(thehostname, theport)) return false;
 	hostname = thehostname;
 	port = theport;
@@ -36,16 +44,16 @@ bool SocketIOClient::connect(char thehostname[], int theport) {
 	return readHandshake();
 }
 
-bool SocketIOClient::connected() {
+bool SocketIOClientSecure::connected() {
 	return client.connected();
 }
 
-void SocketIOClient::disconnect() {
+void SocketIOClientSecure::disconnect() {
 	client.stop();
 }
 
 // find the nth colon starting from dataptr
-void SocketIOClient::findColon(char which) {	
+void SocketIOClientSecure::findColon(char which) {	
 	while (*dataptr) {
 		if (*dataptr == ':') {
 			if (--which <= 0) return;
@@ -55,11 +63,11 @@ void SocketIOClient::findColon(char which) {
 }
 
 // terminate command at dataptr at closing double quote
-void SocketIOClient::terminateCommand(void) {
+void SocketIOClientSecure::terminateCommand(void) {
 	dataptr[strlen(dataptr)-3] = 0;
 }
 
-void SocketIOClient::monitor() {
+void SocketIOClientSecure::monitor() {
 
 	*databuffer = 0;
 
@@ -118,31 +126,38 @@ void SocketIOClient::monitor() {
 	}
 }
 
-void SocketIOClient::setDataArrivedDelegate(DataArrivedDelegate newdataArrivedDelegate) {
+void SocketIOClientSecure::setDataArrivedDelegate(DataArrivedDelegate newdataArrivedDelegate) {
 	  dataArrivedDelegate = newdataArrivedDelegate;
 }
 
-void SocketIOClient::sendHandshake(char hostname[]) {
+//Send the apopraite headerfiles to try establish a commumication
+void SocketIOClientSecure::sendHandshake(IPAddress ip, const char* path, const char* querry ) {
+	client.println(F("GET  HTTP/1.1"));
+	client.print(F("Host: "));
+	client.println(F("User-Agent: Arduino/1.0"));
+}
+
+void SocketIOClientSecure::sendHandshake(char hostname[]) {
 	client.println(F("GET /socket.io/1/ HTTP/1.1"));
 	client.print(F("Host: "));
 	client.println(hostname);
 	client.println(F("Origin: Arduino\r\n"));
 }
 
-bool SocketIOClient::waitForInput(void) {
+bool SocketIOClientSecure::waitForInput(void) {
 unsigned long now = millis();
 	while (!client.available() && ((millis() - now) < 30000UL)) {;}
 	return client.available();
 }
 
-void SocketIOClient::eatHeader(void) {
+void SocketIOClientSecure::eatHeader(void) {
 	while (client.available()) {	// consume the header
 		readLine();
 		if (strlen(databuffer) == 0) break;
 	}
 }
 
-bool SocketIOClient::readHandshake() {
+bool SocketIOClientSecure::readHandshake() {
 
 	if (!waitForInput()) return false;
 
@@ -182,7 +197,7 @@ bool SocketIOClient::readHandshake() {
 	client.println(F(" HTTP/1.1"));
 	client.print(F("Host: "));
 	client.println(hostname);
-	client.println(F("Origin: ArduinoSocketIOClient"));
+	client.println(F("Origin: ArduinoSocketIOClientSecure"));
 	client.println(F("Upgrade: WebSocket"));	// must be camelcase ?!
 	client.println(F("Connection: Upgrade\r\n"));
 
@@ -199,7 +214,7 @@ bool SocketIOClient::readHandshake() {
 	return true;
 }
 
-void SocketIOClient::readLine() {
+void SocketIOClientSecure::readLine() {
 	dataptr = databuffer;
 	while (client.available() && (dataptr < &databuffer[DATA_BUFFER_LEN-2])) {
 		char c = client.read();
@@ -213,7 +228,7 @@ void SocketIOClient::readLine() {
 	*dataptr = 0;
 }
 
-void SocketIOClient::send(char *data) {
+void SocketIOClientSecure::send(char *data) {
 	client.print((char)0);
 	client.print("3:::");
 	client.print(data);

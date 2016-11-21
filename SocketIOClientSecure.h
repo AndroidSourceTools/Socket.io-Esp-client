@@ -27,35 +27,46 @@
 	OTHER DEALINGS IN THE SOFTWARE.
 */
 #include "Arduino.h"
-#include <Ethernet.h>
+#include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h>
 #include "SPI.h"
 
 // Length of static data buffers
 #define DATA_BUFFER_LEN 120
 #define SID_LEN 24
 
-class SocketIOClient {
+//Using the https protocol
+class SocketIOClientSecure {
 	public:
-		typedef void (*DataArrivedDelegate)(SocketIOClient client, char *data);
-		bool connect(char hostname[], int port = 80);
+		typedef void (*DataArrivedDelegate)(SocketIOClientSecure client, char *data);
+		//Connect to the socket server over https
+		bool connect(IPAddress ip, uint16_t port = 443) ;
+		bool connect(const char* name, uint16_t port = 443) ;
+
         bool connected();
         void disconnect();
 		void monitor();
+		//Callback method
 		void setDataArrivedDelegate(DataArrivedDelegate dataArrivedDelegate);
+		//Send data to socket server
 		void send(char *data);
 	private:
-        void sendHandshake(char hostname[]);
-        EthernetClient client;
-        DataArrivedDelegate dataArrivedDelegate;
-        bool readHandshake();
-		void readLine();
+		WiFiClientSecure client;
+		DataArrivedDelegate dataArrivedDelegate;
 		char *dataptr;
 		char databuffer[DATA_BUFFER_LEN];
 		char sid[SID_LEN];
 		char *hostname;
-		int port;
+
+		void sendHandshake(IPAddress ip);
+        void sendHandshake(const char* name);
+      
+        bool readHandshake();
+		bool waitForInput(void);
+		uint16_t port;
+
+		void readLine();
 		void findColon(char which);
 		void terminateCommand(void);
-		bool waitForInput(void);
 		void eatHeader(void);
 };
