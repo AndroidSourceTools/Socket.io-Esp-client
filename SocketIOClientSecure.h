@@ -31,6 +31,7 @@
 #include <WiFiClientSecure.h>
 #include "SPI.h"
 
+
 // Length of static data buffers
 #define DATA_BUFFER_LEN 120
 #define SID_LEN 24
@@ -44,20 +45,26 @@ class SocketIOClientSecure {
 		bool connect(const char* name, uint16_t port = 443) ;
 
         bool connected();
+		bool  monitor();
+
         void disconnect();
-		void monitor();
+		void parser(int index);
+		void heartbeat(int select);
+		
 		//Callback method
 		void setDataArrivedDelegate(DataArrivedDelegate dataArrivedDelegate);
 		//Send data to socket server
 		void send(char *data);
 	private:
+		
 		WiFiClientSecure client;
 		DataArrivedDelegate dataArrivedDelegate;
 		IPAddress serverIp;
 		char *dataptr;
 		char databuffer[DATA_BUFFER_LEN];
 		char sid[SID_LEN];
-		char *hostname;
+		char key[28];
+		const char* hostname;
 
 		void sendHandshake(IPAddress ip);
         void sendHandshake(const char* name);
