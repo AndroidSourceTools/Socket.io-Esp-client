@@ -37,6 +37,9 @@ String Rcontent = "";
 bool SocketIOClientSecure::connect(IPAddress ip, uint16_t theport) {
 	if (!client.connect(ip, theport))return false;
 	serverIp = ip;
+	hostname = ip.toString().c_str();
+	Serial.print("Host name: ");
+	Serial.println(hostname);
 	port = theport;
 	sendHandshake(ip);
 	return readHandshake();
@@ -235,7 +238,10 @@ bool SocketIOClientSecure::readHandshake() {
 	client.println(F(" HTTP/1.1"));
 	client.println(F("Connection: Upgrade"));
 	client.println(F("Upgrade: websocket"));
-	client.println(F("Host: 104.198.2.177:8081"));
+	client.print(F("Host: "));
+	client.print(hostname);
+	client.print(F(":"));
+	client.println(port);
 	client.println(F("Sec-WebSocket-Version: 13"));
 	client.println(F("Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ=="));
 	client.println();
