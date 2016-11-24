@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Socket.io Esp Client by Capdt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Socket.io Esp Client</h1>
+      <h2 class="project-tagline">A socket.io client for the Esp 8266</h2>
+      <a href="https://github.com/Capdt/socket.io-esp-client" class="btn">View on GitHub</a>
+      <a href="https://github.com/Capdt/socket.io-esp-client/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/Capdt/socket.io-esp-client/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="socketio-esp8266-client-an-esp-client-for-connecting-and-messaging-with-socketio-servers-over-https" class="anchor" href="#socketio-esp8266-client-an-esp-client-for-connecting-and-messaging-with-socketio-servers-over-https" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>SocketIO Esp8266 Client, an esp client for connecting and messaging with Socket.io servers over https.</h1>
+
+<p>This implementation is heavily based on <a href="https://github.com/billroy/socket.io-arduino-client">Bill Roy</a> and <a href="https://github.com/washo4evr/Socket.io-v1.x-Library">washo4evr</a> you should check out their work of you have the time. the major difference is that this library is implemented using HTTPS instead of HTTP because it's 2016 <g-emoji alias="stuck_out_tongue" fallback-src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f61b.png" ios-version="6.0">😛</g-emoji></p>
+
+<hr>
+
+<h2>
+<a id="there-are-2-examples-included-in-this-repository" class="anchor" href="#there-are-2-examples-included-in-this-repository" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>There are 2 examples included in this repository</h2>
+
+<ul>
+<li>arduino_client</li>
+<li>socket_io_server</li>
+</ul>
+
+<p><strong>The socket_io server is a node implementation. to run the server cd into the repository and run the following commands</strong></p>
+
+<div class="highlight highlight-source-shell"><pre>npm install       <span class="pl-cce">\\</span>Install the dependencies
+node index         <span class="pl-cce">\\</span>Start the server</pre></div>
+
+<h3>
+<a id="note" class="anchor" href="#note" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Note</h3>
+
+<p>This library is not complete here are a list of features which still need to be implemented/fixed over the next few weeks.</p>
+
+<ul>
+<li>Socket times out after about 60 seconds.</li>
+<li>Send data from the Esp to the server.</li>
+</ul>
+
+<h3>
+<a id="installation-instructions" class="anchor" href="#installation-instructions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation instructions</h3>
+
+<p>Clone this repository into your Arduino Sketchbook directory under libraries, then restart the Arduino IDE so that it notices the new library.  Now, under File\Examples you should see SocketIOClientSecure.  </p>
+
+<h3>
+<a id="how-to-use-this-library" class="anchor" href="#how-to-use-this-library" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How To Use This Library</h3>
+
+<div class="highlight highlight-source-c++"><pre>IPAddress <span class="pl-en">server</span>(<span class="pl-c1">104</span>, <span class="pl-c1">198</span>, <span class="pl-c1">98</span>, <span class="pl-c1">11</span>); 
+<span class="pl-k">const</span> <span class="pl-k">int</span> httpPort = <span class="pl-c1">8081</span>; 
+SocketIOClientSecure socketIOClient; 
+... 
+... 
+... 
+<span class="pl-k">void</span> <span class="pl-en">setup</span>() {  
+    Serial.<span class="pl-c1">begin</span>(<span class="pl-c1">115200</span>);   
+    ...
+    ...
+    <span class="pl-c">//Connect to the server     </span>
+    <span class="pl-k">if</span> (!socketIOClient.<span class="pl-c1">connect</span>(server, httpPort)) Serial.<span class="pl-c1">println</span>(<span class="pl-c1">F</span>(<span class="pl-s"><span class="pl-pds">"</span>Not connected.<span class="pl-pds">"</span></span>));     
+    <span class="pl-k">if</span> (socketIOClient.<span class="pl-c1">connected</span>())     
+    {   
+        <span class="pl-c">//Send message to server</span>
+        <span class="pl-c">//socketIOClient.send(" Connected !!!!");   </span>
+    }<span class="pl-k">else</span>{      
+        Serial.<span class="pl-c1">println</span>(<span class="pl-s"><span class="pl-pds">"</span>Connection Error<span class="pl-pds">"</span></span>);         
+        <span class="pl-k">while</span> (<span class="pl-c1">1</span>);  
+    }   
+    <span class="pl-c1">delay</span>(<span class="pl-c1">1000</span>); 
+}  
+<span class="pl-k">void</span> <span class="pl-en">loop</span>(){    
+    <span class="pl-k">if</span> (socketIOClient.<span class="pl-c1">monitor</span>()){      
+        Serial.<span class="pl-c1">println</span>(<span class="pl-s"><span class="pl-pds">"</span>RID<span class="pl-pds">"</span></span>);      
+        Serial.<span class="pl-c1">println</span>(RID);        
+        <span class="pl-k">if</span> (RID == <span class="pl-s"><span class="pl-pds">"</span>atime<span class="pl-pds">"</span></span> &amp;&amp; Rname == <span class="pl-s"><span class="pl-pds">"</span>time<span class="pl-pds">"</span></span>){             
+            Serial.<span class="pl-c1">print</span>(<span class="pl-s"><span class="pl-pds">"</span>Time is <span class="pl-pds">"</span></span>);           
+            Serial.<span class="pl-c1">println</span>(Rcontent);       
+        }   
+    }<span class="pl-k">else</span> <span class="pl-k">if</span>(!socketIOClient.<span class="pl-c1">connected</span>()) {         
+        Serial.<span class="pl-c1">println</span>(<span class="pl-s"><span class="pl-pds">"</span>I ran<span class="pl-pds">"</span></span>);        
+        socketIOClient.<span class="pl-c1">connect</span>(server, httpPort);   
+    }  
+}
+</pre></div>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/Capdt/socket.io-esp-client">Socket.io Esp Client</a> is maintained by <a href="https://github.com/Capdt">Capdt</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
