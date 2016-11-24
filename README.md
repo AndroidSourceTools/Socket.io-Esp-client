@@ -1,12 +1,14 @@
 # SocketIO Esp8266 Client, an esp client for connecting and messaging with Socket.io servers over https.
 
-This implementation is based off 2 repositories [Bill Roy][1] and [washo4evr][2] the difference is that this library is implemented using https instead of http because it's 2016 :joy:
+This implementation is heavily based on [Bill Roy][1] and [washo4evr][2] you should check out their work of you have the time. the major difference is that this library is implemented using HTTPS instead of HTTP because it's 2016 :stuck_out_tongue:
 
-There are 2 examples included in this repository
+***
+
+## There are 2 examples included in this repository
 * arduino_client
 * socket_io_server
 
-__The socket_io server is a node implementation. to run the server cd into the repository and run the following commands__
+_The socket_io server is a node implementation. to run the server cd into the repository and run the following commands_
 ```bash
 npm install       \\Install the dependencies
 node index         \\Start the server
@@ -15,14 +17,14 @@ node index         \\Start the server
 
 ### Note
 
-This library is not fully complete here are a list of features which still need to be implemented/fixed over the next 2 weeks.
+This library is not complete here are a list of features which still need to be implemented/fixed over the next few weeks.
 
 * Socket times out after about 60 seconds.
 * Send data from the Esp to the server.
 
 ### Installation instructions
 
-Clone this repository into your Ardunio Sketchbook directory under libraries, then restart the Arduino IDE so that it notices the new library.  Now, under File\Examples you should see SocketIOClientSecure.  
+Clone this repository into your Arduino Sketchbook directory under libraries, then restart the Arduino IDE so that it notices the new library.  Now, under File\Examples you should see SocketIOClientSecure.  
 
 ### How To Use This Library
 
