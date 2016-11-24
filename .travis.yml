@@ -1,9 +1,6 @@
-//Travis build configuration for the node server
-
 language: node_js
 dist: trusty
 node_js:
-    - '5'
     - '4'
 before_script:
     - cd examples/socket_io_server
