@@ -1,8 +1,7 @@
-# SocketIO Esp8266 Client,
-
+# SocketIO Esp8266 Client 
 #### an esp client for connecting and messaging with Socket.io servers over https.
 
-This implementation is heavily based on [Bill Roy][1] and [washo4evr][2] you should check out their work of you have the time. the major difference is that this library is implemented using HTTPS instead of HTTP because it's 2016 :stuck_out_tongue:
+This implementation is derived from [Bill Roy][1] and [washo4evr][2] implementation you should check out their work. the major difference is that this library is implemented using HTTPS instead of HTTP because it's 2016 :stuck_out_tongue:
 
 ***
 
