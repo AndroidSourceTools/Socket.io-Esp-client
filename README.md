@@ -1,44 +1,69 @@
-# SocketIO Arduino Client, an Arduino client for connecting and messaging with Socket.io servers
+# SocketIO Esp8266 Client, an esp client for connecting and messaging with Socket.io servers over https.
 
-Based on Kevin Rohling's arduino websocket client modified to work with socket.io servers.  Along the way, all uses of the String class were replaced with fixed char buffers so as to use less memory.
+This implementation is based off 2 repositories [Bill Roy][1] and [washo4evr][2] the difference is that this library is implemented using https instead of http because it's 2016 :joy:
 
-The bitlashsocketio.ino example provides an integration with Bitlash on the Arduino and a node.js example server that can be used to send Bitlash commands over the Websocket fabric to the Arduino, and see its output in reply.
+There are 2 examples included in this repository
+* arduino_client
+* socket_io_server
 
-Kevin's documentation is reproduced hereinafter, with changes as needed.
-
-
-## Caveats
-
-This library doesn't support every inch of the Websocket spec, most notably the use of a Sec-Websocket-Key.  Also, because Arduino doesn't support SSL, this library also doesn't support the use of Websockets over https.  If you're interested in learning more about the Websocket spec I recommend checking out the [Wikipedia Page](http://en.wikipedia.org/wiki/WebSocket).  Now that I've got that out of the way, I've been able to successfully use this to connect to several hosted Websocket services, including: [echo.websocket.org](http://websocket.org/echo.html) and [pusherapp.com](http://pusherapp.com).
-
-## Installation instructions
-
-Clone this repo into your Arduino Sketchbook directory under libraries, then restart the Arduino IDE so that it notices the new library.  Now, under File\Examples you should see SocketIOClient.  
-
-## How To Use This Library
-
-```
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-char server[] = "echo.websocket.org";
-WebSocketClient client;
-
-void setup() {
-  Serial.begin(9600);
-  Ethernet.begin(mac);
-  client.connect(server);
-  client.setDataArrivedDelegate(dataArrived);
-  client.send("Hello World!");
-}
-
-void loop() {
-  client.monitor();
-}
-
-void dataArrived(WebSocketClient client, char *data) {
-  Serial.println("Data Arrived: " + data);
-}
+__The socket_io server is a node implementation. to run the server cd into the repository and run the following commands__
+```bash
+npm install       \\Install the dependencies
+node index         \\Start the server
 ```
 
-## Examples
 
-There example included with this library, EchoExample, will connect to echo.websocket.org, which hosts a service that simply echos any messages that you send it via Websocket.  This example sends the message "Hello World!".  If the example runs correctly, the Arduino will receive this same message back over the Websocket and print it via Serial.println.
+### Note
+
+This library is not fully complete here are a list of features which still need to be implemented/fixed over the next 2 weeks.
+
+* Socket times out after about 60 seconds.
+* Send data from the Esp to the server.
+
+### Installation instructions
+
+Clone this repository into your Ardunio Sketchbook directory under libraries, then restart the Arduino IDE so that it notices the new library.  Now, under File\Examples you should see SocketIOClientSecure.  
+
+### How To Use This Library
+
+```c++
+IPAddress server(104, 198, 98, 11); 
+const int httpPort = 8081; 
+SocketIOClientSecure socketIOClient; 
+... 
+... 
+... 
+void setup() { 	
+	Serial.begin(115200); 	
+	...
+	...
+	//Connect to the server	 	
+	if (!socketIOClient.connect(server, httpPort)) Serial.println(F("Not connected.")); 	
+	if (socketIOClient.connected()) 	
+	{ 	
+		//Send message to server
+		//socketIOClient.send(" Connected !!!!"); 	
+	}else{ 		
+		Serial.println("Connection Error"); 		
+		while (1); 	
+	} 	
+	delay(1000); 
+}  
+void loop(){  	
+	if (socketIOClient.monitor()){ 		
+		Serial.println("RID"); 		
+		Serial.println(RID); 		
+		if (RID == "atime" && Rname == "time"){ 			
+			Serial.print("Time is "); 			
+			Serial.println(Rcontent); 		
+		} 	
+	}else if(!socketIOClient.connected()) { 		
+		Serial.println("I ran"); 		
+		socketIOClient.connect(server, httpPort); 	
+	}  
+}
+
+```
+
+[1]: https://github.com/billroy/socket.io-arduino-client
+[2]: https://github.com/washo4evr/Socket.io-v1.x-Library

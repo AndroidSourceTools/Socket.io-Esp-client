@@ -1,9 +1,10 @@
 #! /usr/bin/env node
 //////////
 //
-//	index.js: Bitlash WebSocket Client test harness
+//	index.js: WebSocket server 
 //
-//	Copyright 2013 Bill Roy (MIT License; see LICENSE file)
+//	MIT License
+//  Copyright (c) [2016] [Dolapo Toki]
 //
 //
 var fs = require('fs');
@@ -21,7 +22,7 @@ var argv = opt.usage('Usage: $0 [flags]')
 if (argv.help) {
 	opt.showHelp();
 	process.exit();
-} 
+}
 
 var port = argv.port || 3000;
 var log_file = "datalog.txt";
@@ -29,12 +30,12 @@ var log_file = "datalog.txt";
 console.log('WebSocket Commander here!', argv);
 
 //Load https certificates
-var privateKey  = fs.readFileSync('keys/key.pem', 'utf8');
+var privateKey = fs.readFileSync('keys/key.pem', 'utf8');
 var certificate = fs.readFileSync('keys/cert.pem', 'utf8');
 var credentials = {
-	key: privateKey, 
+	key: privateKey,
 	cert: certificate,
-	passphrase:'socketio'
+	passphrase: 'socketio'
 };
 
 //////////
@@ -44,21 +45,19 @@ var credentials = {
 var express = require('express');
 var app = express();
 var https = require('https');
-var server = https.Server(credentials,app);
+var server = https.Server(credentials, app);
 var io = require('socket.io')(server);
 io.set('log level', argv.debug ? 3 : 1);
 
 
-//app.use(express.logger());
-//app.use(express.bodyParser());
+
 app.use(express.static(__dirname + '/public'));
-app.get('/', function(req, res) {
+app.get('/', function (req, res) {
 	res.sendFile(__dirname + '/index.html');
 });
 
 server.listen(port);
 console.log('Listening on port:', port);
-
 
 //////////
 //
@@ -68,39 +67,48 @@ var output_socket;
 var fs = require('fs');
 var tty = io
 	.of('/tty')
-	.on('connection', function(socket) {
+	.on('connection', function (socket) {
 		console.log('Browser connected.');
 		socket.emit('message', 'Connected to server at ' + new Date().toString() + '\n');
-		socket.on('message', function(data) {
+		socket.on('message', function (data) {
 			console.log('from client: ', data);
 			if (output_socket) output_socket.emit(data);
 		});
 	});
 
-
-setInterval(function() {
+setInterval(function () {
 	console.log('Sending tty ping...');
 	tty.emit('message', new Date().toString() + '\n');
 }, 30000);
 
-//Any other socket connection (The ardunio)
+//Any other socket connection (The Esp)
 io.sockets.on('connection', function (socket) {
 	console.log('Client connected via', socket.transport);
-	socket.on('message', function(data) {
+	//Emit this message every 3000ms
+	var emitMessage = setInterval(function () {
+		console.log("emittng message...");
+		socket.broadcast.emit("Esps are awesome");
+	}, 3000);
+
+	//Not implemented yet
+	socket.on('message', function (data) {
 		process.stdout.write(data);
 		tty.emit('message', data);
 		if (argv.log) {
 			fs.appendFile(log_file, data, function (err) {
 				if (err) console.log('LOG FILE WRITE ERROR:', data);
-				else {}
+				else { }
 			});
 		}
 	});
-	socket.emit('ls');
-	output_socket = socket;		// save global ugh
+
+	output_socket = socket; // save global ugh
+	//On disconnect stop emitting
+	socket.on('disconnect', function () {
+		clearImmediate(emitMessage);
+		io.emit('Esp disconnected');
+	});
 });
-
-
 
 //////////
 //
@@ -116,8 +124,7 @@ process.stdin.on('data', function (key) {
 		process.stdout.write('\r\n');
 		output_socket.emit(cmd);
 		cmd = '';
-	}
-	else {
+	} else {
 		process.stdout.write(key);
 		cmd = cmd + key;
 	}

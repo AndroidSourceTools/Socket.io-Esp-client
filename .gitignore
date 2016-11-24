@@ -1,3 +1,5 @@
-# osx noise
+#Files to ignore
 .DS_Store
-profile
+
+#Folders to ignore
+__vm/
