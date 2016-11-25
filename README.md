@@ -6,8 +6,8 @@ This implementation is derived from [Bill Roy][1] and [washo4evr][2] implementat
 ***
 
 ## There are 2 examples included in this repository
-* arduino_client
-* socket_io_server
+* esp_client  _travis build script in the works_ :simple_smile:
+* socket_io_server  [![Build Status](https://travis-ci.org/Capdt/socket.io-esp-client.svg?branch=master)](https://travis-ci.org/Capdt/socket.io-esp-client)
 
 _The socket_io server is a node implementation. to run the server cd into the repository and run the following commands_
 ```bash
