@@ -40,7 +40,8 @@ void sendJSON(String RID, String JSON);
 ```
 
 In this case the ```RID='device status'``` and the ```{Rname: "Rcontent"}``` will be the ```data``` that is received.
-```java script
+
+```javascript
 io.on('connection', function (socket) {
 	socket.on('device status', function (data) {
 		...
@@ -62,7 +63,7 @@ extern String Rcontent;
 ```
 
 ## Node snippet, Sends a status ping to the esp 
-```java script
+```javascript
 ...
 ...
 sendPing = setInterval(function () {
@@ -113,3 +114,5 @@ RID: server status, Rname: status, Rcontent: 100 .
 
 [1]: https://github.com/billroy/socket.io-arduino-client
 [2]: https://github.com/washo4evr/Socket.io-v1.x-Library
+
+Made with :heart:
