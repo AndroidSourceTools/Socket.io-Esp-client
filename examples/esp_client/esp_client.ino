@@ -37,6 +37,7 @@ const int httpPort = 3000;
 IPAddress server(192, 168, 1, 74);
 SocketIOClientSecure socketIOClient;
 
+unsigned long now;
 void setup()
 {
 	Serial.begin(115200);
@@ -85,14 +86,16 @@ void setup()
 	if (!socketIOClient.connect(server, httpPort)) Serial.println(F("Not connected."));
 	if (socketIOClient.connected())
 	{
-		//socketIOClient.send(" Connected !!!!");
+		Serial.println("Conection susseful..");
+		socketIOClient.send("device status", "status", "200");
 	}
 	else
 	{
 		Serial.println("Connection Error");
 		while (1);
 	}
-	delay(1000);
+	now=0000UL;
+	delay(500);
 }
 
 void loop()
@@ -100,17 +103,25 @@ void loop()
 
 	if (socketIOClient.monitor())
 	{
-		Serial.println("RID");
-		Serial.println(RID);
-		if (RID == "atime" && Rname == "time")
-		{
-		 	Serial.print("Time is ");
-			Serial.println(Rcontent);
+		Serial.print("RID: ");
+		Serial.print(RID);
+		Serial.print(", Rname: ");
+		Serial.print(Rname);
+		Serial.print(", Rcontent: ");
+		Serial.println(Rcontent+" .");
+		//Send ping to server
+		if ((millis() - now) > 10000UL) {
+			now = millis();
+			Serial.println("Sending ping to server...");
+			socketIOClient.send("device status", "status", "100");
 		}
-	}else if(!socketIOClient.connected()) {
-
+		socketIOClient.send("message", "Power", "off");
+	}
+	else if(!socketIOClient.connected()) {
+		
 		socketIOClient.connect(server, httpPort);
 	}
+	delay(500);
 
 }
 //Method to connect wifi acess point

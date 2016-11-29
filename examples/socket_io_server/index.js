@@ -1,5 +1,5 @@
 #! /usr/bin/env node
-//////////
+ //////////
 //
 //	index.js: WebSocket server 
 //
@@ -74,41 +74,51 @@ var tty = io
 			console.log('from client: ', data);
 			if (output_socket) output_socket.emit(data);
 		});
+		var sendPingToBrowser=setInterval(function () {
+			console.log("Pinging Browser...");
+			socket.emit('message','Ping from server...'+'\n');
+		},30000);
 	});
-
-setInterval(function () {
-	console.log('Sending tty ping...');
-	tty.emit('message', new Date().toString() + '\n');
-}, 30000);
-
-//Any other socket connection (The Esp)
-io.sockets.on('connection', function (socket) {
-	console.log('Client connected via', socket.transport);
-	//Emit this message every 3000ms
-	var emitMessage = setInterval(function () {
-		console.log("emittng message...");
-		socket.broadcast.emit("Esps are awesome");
-	}, 3000);
-
-	//Not implemented yet
-	socket.on('message', function (data) {
-		process.stdout.write(data);
-		tty.emit('message', data);
-		if (argv.log) {
-			fs.appendFile(log_file, data, function (err) {
-				if (err) console.log('LOG FILE WRITE ERROR:', data);
-				else { }
+//Not working
+tty.on('disconnect',function(data){
+	console.log("Browser disconnect");
+});
+io.on('connection', function (socket) {
+	socket.on('device status', function (data) {
+		//If device begins to communicate 
+		if (data.status == "200") {
+			console.log("device ready to recieve data");
+			//Send ping to client ever 1000ms
+			sendPing = setInterval(function () {
+				console.log("emittng message...");
+				io.emit('server status', {
+					status: '100'
+				});
+			}, 1000);
+		} else if (data.status == "100") {
+			console.log("Recieved ping from client", data)
+			io.emit('server status', {
+				status: '100'
 			});
+		} else {
+			console.log("device not ready");
+			console.log(data);
 		}
+	});
+	//On getting a message form the server
+	socket.on('message', function (data) {
+		console.log("Recieved Message");
+		console.log(data);
+		tty.emit('message', data);
 	});
 
 	output_socket = socket; // save global ugh
 	//On disconnect stop emitting
 	socket.on('disconnect', function () {
-		clearImmediate(emitMessage);
 		io.emit('Esp disconnected');
 	});
 });
+
 
 //////////
 //

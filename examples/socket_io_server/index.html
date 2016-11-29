@@ -28,10 +28,13 @@ $(document).ready(function() {
 
 	var tty = io.connect('/tty');
 	console.log('Socket connected', tty);
-	tty.on('message', function(data) { 
-		data = data.replace(/\n/g, '<br/>');
-		data = data.replace(/ /g, '&nbsp;');
-		append(data);
+	tty.on('message', function(data) {
+		//TODO check if data is json
+		//data might be in json formart 
+		data = JSON.stringify(data).replace(/\n/g, '<br/>');
+		data = JSON.stringify(data).replace(/ /g, '&nbsp;');
+		console.log(data);
+		append(data+'<br>');
 	});
 
 	var cmd = '';

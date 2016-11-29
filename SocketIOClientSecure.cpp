@@ -105,12 +105,12 @@ void SocketIOClientSecure::parser(int index) {
 		sizemsg = databuffer[index + 2];    // 126-255 byte
 		index += 1;       // index correction to start
 	}
-	Serial.print("Message size = ");	//Can be used for debugging
-	Serial.println(sizemsg);			//Can be used for debugging
+	//Serial.print("Message size = ");	//Can be used for debugging
+	//Serial.println(sizemsg);			//Can be used for debugging
 	for (int i = index + 2; i < index + sizemsg + 2; i++)
 		rcvdmsg += (char)databuffer[i];
-	Serial.print("Received message = ");	//Can be used for debugging
-	Serial.println(rcvdmsg);				//Can be used for debugging
+	//Serial.print("Received message = ");	//Can be used for debugging
+	//Serial.println(rcvdmsg);				//Can be used for debugging
 	switch (rcvdmsg[0])
 	{
 	case '2':
@@ -132,9 +132,9 @@ void SocketIOClientSecure::parser(int index) {
 			RID = rcvdmsg.substring(4, rcvdmsg.indexOf("\","));
 			Rname = rcvdmsg.substring(rcvdmsg.indexOf("\",") + 4, rcvdmsg.indexOf("\":"));
 			Rcontent = rcvdmsg.substring(rcvdmsg.indexOf("\":") + 3, rcvdmsg.indexOf("\"}"));
-			Serial.println("RID = " + RID);
-			Serial.println("Rname = " + Rname);
-			Serial.println("Rcontent = " + Rcontent);
+			//Serial.println("RID = " + RID);
+			//Serial.println("Rname = " + Rname);
+			//Serial.println("Rcontent = " + Rcontent);
 			//Serial.println(rcvdmsg);
 			break;
 		}
@@ -274,7 +274,7 @@ void SocketIOClientSecure::readLine() {
 	dataptr = databuffer;
 	while (client.available() && (dataptr < &databuffer[DATA_BUFFER_LEN-2])) {
 		char c = client.read();
-		Serial.print(c);
+		//Serial.print(c);
 		if (c == 0) Serial.print(F("NULL"));
 		else if (c == 255) Serial.print(F("0x255"));
 		else if (c == '\r') {;}
@@ -284,12 +284,125 @@ void SocketIOClientSecure::readLine() {
 	*dataptr = 0;
 }
 
-void SocketIOClientSecure::send(char *data) {
-	client.print((char)0);
-	client.print("3:::");
-	client.print(data);
-	client.print((char)255);
+//Send an individual message to the server
+void SocketIOClientSecure::send(String RID, String Rname, String Rcontent) {
+
+	String message = "42[\"" + RID + "\",{\"" + Rname + "\":\"" + Rcontent + "\"}]";
+	int header[10];
+	header[0] = 0x81;
+	int msglength = message.length();
+	randomSeed(analogRead(0));
+	String mask = "";
+	String masked = message;
+	for (int i = 0; i < 4; i++)
+	{
+		char a = random(48, 57);
+		mask += a;
+	}
+	for (int i = 0; i < msglength; i++)
+		masked[i] = message[i] ^ mask[i % 4];
+
+	client.print((char)header[0]);	//has to be sent for proper communication
+									//Depending on the size of the message
+	if (msglength <= 125)
+	{
+		header[1] = msglength + 128;
+		client.print((char)header[1]);	//size of the message + 128 because message has to be masked
+	}
+	else if (msglength >= 126 && msglength <= 65535)
+	{
+		header[1] = 126 + 128;
+		client.print((char)header[1]);
+		header[2] = (msglength >> 8) & 255;
+		client.print((char)header[2]);
+		header[3] = (msglength) & 255;
+		client.print((char)header[3]);
+	}
+	else
+	{
+		header[1] = 127 + 128;
+		client.print((char)header[1]);
+		header[2] = (msglength >> 56) & 255;
+		client.print((char)header[2]);
+		header[3] = (msglength >> 48) & 255;
+		client.print((char)header[4]);
+		header[4] = (msglength >> 40) & 255;
+		client.print((char)header[4]);
+		header[5] = (msglength >> 32) & 255;
+		client.print((char)header[5]);
+		header[6] = (msglength >> 24) & 255;
+		client.print((char)header[6]);
+		header[7] = (msglength >> 16) & 255;
+		client.print((char)header[7]);
+		header[8] = (msglength >> 8) & 255;
+		client.print((char)header[8]);
+		header[9] = (msglength) & 255;
+		client.print((char)header[9]);
+	}
+
+	client.print(mask);
+	client.print(masked);
 }
+//Send json data to the server
+void SocketIOClientSecure::sendJSON(String RID, String JSON) {
+	String message = "42[\"" + RID + "\"," + JSON + "]";
+	int header[10];
+	header[0] = 0x81;
+	int msglength = message.length();
+	randomSeed(analogRead(0));
+	String mask = "";
+	String masked = message;
+	for (int i = 0; i < 4; i++)
+	{
+		char a = random(48, 57);
+		mask += a;
+	}
+	for (int i = 0; i < msglength; i++)
+		masked[i] = message[i] ^ mask[i % 4];
+
+	client.print((char)header[0]);	//has to be sent for proper communication
+									//Depending on the size of the message
+	if (msglength <= 125)
+	{
+		header[1] = msglength + 128;
+		client.print((char)header[1]);	//size of the message + 128 because message has to be masked
+	}
+	else if (msglength >= 126 && msglength <= 65535)
+	{
+		header[1] = 126 + 128;
+		client.print((char)header[1]);
+		header[2] = (msglength >> 8) & 255;
+		client.print((char)header[2]);
+		header[3] = (msglength) & 255;
+		client.print((char)header[3]);
+	}
+	else
+	{
+		header[1] = 127 + 128;
+		client.print((char)header[1]);
+		header[2] = (msglength >> 56) & 255;
+		client.print((char)header[2]);
+		header[3] = (msglength >> 48) & 255;
+		client.print((char)header[4]);
+		header[4] = (msglength >> 40) & 255;
+		client.print((char)header[4]);
+		header[5] = (msglength >> 32) & 255;
+		client.print((char)header[5]);
+		header[6] = (msglength >> 24) & 255;
+		client.print((char)header[6]);
+		header[7] = (msglength >> 16) & 255;
+		client.print((char)header[7]);
+		header[8] = (msglength >> 8) & 255;
+		client.print((char)header[8]);
+		header[9] = (msglength) & 255;
+		client.print((char)header[9]);
+	}
+
+	client.print(mask);
+	client.print(masked);
+}
+
+
 //Generate random mask
 void SocketIOClientSecure::heartbeat(int select) {
 	randomSeed(analogRead(0));

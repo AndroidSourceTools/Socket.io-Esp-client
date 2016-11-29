@@ -34,8 +34,11 @@ class SocketIOClientSecure {
 		
 		//Callback method
 		void setDataArrivedDelegate(DataArrivedDelegate dataArrivedDelegate);
-		//Send data to socket server
-		void send(char *data);
+		
+		//Sending data to the server
+		void send(String RID, String Rname, String Rcontent);
+		void sendJSON(String RID, String JSON);
+
 	private:
 		
 		WiFiClientSecure client;
