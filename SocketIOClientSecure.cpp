@@ -147,8 +147,11 @@ void SocketIOClientSecure::setDataArrivedDelegate(DataArrivedDelegate newdataArr
 
 //Send the apopraite headerfiles to try establish a commumication using ip
 void SocketIOClientSecure::sendHandshake(IPAddress ip) {
-	client.println("GET /socket.io/?EIO=3&transport=polling HTTP/1.1");
-	client.println(F("Host: 104.198.2.177:8081"));
+	client.println("GET /socket.io/?EIO=3&transport=polling HTTP/1.1");	
+	client.print(F("Host: "));
+	client.print(hostname);
+	client.print(F(":"));
+	client.println(port);
 	client.println(F("Origin: Arduino\r\n"));
 }
 //Send the apopraite headerfiles to try establish a commumication using dns

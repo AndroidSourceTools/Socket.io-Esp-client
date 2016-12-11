@@ -3,3 +3,4 @@
 
 #Folders to ignore
 __vm/
+bower_components/

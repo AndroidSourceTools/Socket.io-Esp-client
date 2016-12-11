@@ -1,0 +1,7 @@
+{
+  "name": "Esp server control pannel",
+  "short_name": "Esp server control pannel",
+  "description": "A front end control panel applicaiotn to interface  with the  socket application to send and recieve messages from the esp",
+  "start_url": "/",
+  "display": "standalone"
+}

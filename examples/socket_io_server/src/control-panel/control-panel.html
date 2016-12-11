@@ -1,0 +1,127 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/iron-grid/iron-grid.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
+
+
+<dom-module id="control-panel">
+  <template>
+    <style>
+      :host {
+        display: block;
+        padding: 0px;
+      }
+      .consoleSection{
+        background-color: black;
+      }
+      .detailsSection{
+        background-color: white;
+      }
+      .consoleSection{
+        height: 100vh;
+      }
+      paper-card{
+        width:100%;
+        --paper-card-content: {
+            background-color:#0a1019;
+            height:80%;
+            color:green;
+        }
+      }
+    </style>
+    <iron-grid>
+      <div class="s9 consoleSection">
+         <paper-card heading="ID: 0000" alt="Esp 8266ID">
+            <div class="console output" >
+
+            </div>
+            <div class="card-content">
+              <template is="dom-repeat" items="{{output}}">
+                 <p>{{item}}</p>
+               </template>
+            </div>
+            <div class="card-actions">
+              <div style="width:100%; margin-left:auto; margin-right:auto;">
+                <paper-textarea style="width:80%; display:inline-block;" label="Enter json String"></paper-textarea>
+                <paper-button style="display:inline-block;" >Send</paper-button>
+              </div>
+            </div>
+          </paper-card>
+      </div>
+      <div class="s3 detialsSection">
+        <paper-dropdown-menu label="Select Device">
+          <paper-listbox class="dropdown-content">
+            <template is="dom-repeat" items={{clientId}}>
+              <paper-item on-tap="selectDevice" value={{item}} >{{item}}</paper-item>
+            </template>
+          </paper-listbox>
+        </paper-dropdown-menu>
+      </div>
+    </iron-grid>
+  </template>
+  <script  src="/socket.io/socket.io.js"></script>
+  <script>
+    var socketConnection;
+    var socketConnection2;
+    Polymer({
+      is: 'control-panel',
+      properties: {
+        prop1: {
+          type: String,
+          value: 'control-panel',
+        },
+        output: {
+          type:Object,
+          value: function(){return [];}
+        },
+        clientId: {
+          type:Object,
+          value: function(){return [];}
+        }
+      },
+      ready: function() {
+         this.initSocketConnection();
+         this.registerListner();
+         this.getListOfDevices();
+      },
+      initSocketConnection: function(){
+          socketConnection = io.connect('/browser-client');
+          console.log(socketConnection);
+      },
+      registerListner: function(){
+        var globalThis=this;
+        socketConnection.on('message',function(data){
+          globalThis.push('output',data);
+          console.log(globalThis.output);
+        });
+      },
+      selectDevice: function(event){
+        var model=event.model;
+        var closeFilter=Polymer.dom(model).node._nodes[1].innerText;
+        socketConnection2 = io.connect('/'+closeFilter);
+        console.log(socketConnection);
+         this.registerListner();
+         this.getListOfDevices();
+        //Reattach listners
+      },
+      getListOfDevices: function(){
+        var globalThis=this;
+         socketConnection.on('device-list',function(data){
+          //if (error) throw error;
+          console.log(data); // => [PZDoMHjiu8PYfRiKAAAF, Anw2LatarvGVVXEIAAAD]
+          if(data.length!=0){
+            //console.log("yes");
+            globalThis.clientId=data;  
+          }
+        });
+      }
+
+
+    });
+  </script>
+</dom-module>
